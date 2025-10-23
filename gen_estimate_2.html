@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generac Generator Price Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        h1 { text-align: center; color: #333; }
+        p { font-size: 0.95em; color: #555; }
+        form { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        label { margin-top: 12px; font-weight: bold; display: block; color: #333; }
+        input, select { padding: 8px; margin-top: 5px; width: 100%; border: 1px solid #ccc; border-radius: 4px; }
+        .button-group { display: flex; gap: 10px; margin-top: 25px; }
+        button { padding: 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 1em; flex: 1; }
+        .calculate-btn { background-color: #007bff; color: white; }
+        .calculate-btn:hover { background-color: #0056b3; }
+        .clear-btn { background-color: #dc3545; color: white; }
+        .clear-btn:hover { background-color: #c82333; }
+        #result { margin-top: 25px; padding: 15px; background-color: #e9f7ff; border: 1px solid #b8daff; border-radius: 6px; font-size: 1.05em; }
+        .checkbox-group, .radio-group { display: flex; align-items: center; margin-top: 5px; }
+        .checkbox-group input[type="checkbox"], .radio-group input[type="radio"] { margin-right: 8px; width: auto; }
+        .checkbox-group label, .radio-group label { margin: 0; font-weight: normal; color: #444; }
+        .info { margin-top: 5px; font-size: 0.85em; color: #666; font-style: italic; }
+        .section { margin-top: 20px; padding-top: 15px; border-top: 1px dashed #ddd; }
+        .section:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+        .highlight { color: #007bff; font-weight: bold; }
+        .service-contract { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .smart-module { background-color: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        
+        /* FIXED SMART MODULE */
+        .smart-option { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            padding: 8px; 
+            background: rgba(255,255,255,0.7); 
+            border-radius: 4px; 
+        }
+        .smart-option input[type="radio"] { 
+            margin-right: 10px; 
+            width: 18px; 
+            height: 18px; 
+        }
+        .smart-option label { 
+            margin: 0 10px 0 0; 
+            font-weight: normal; 
+            flex: 1; 
+        }
+        .quantity-input { 
+            width: 50px; 
+            padding: 4px; 
+            text-align: center; 
+            margin: 0 8px;
+            border: 1px solid #28a745;
+            background: white;
+        }
+        .quantity-input:disabled {
+            background: #f8f9fa;
+            opacity: 0.6;
+        }
+        .smart-total { 
+            font-weight: bold; 
+            color: #28a745; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Generac Generator Price Calculator</h1>
+    <p>Select your Generac generator and options. 25 feet of wire is included free — extra wire is $11 per foot.</p>
+    
+    <form id="calculatorForm">
+        <!-- Generator Size -->
+        <label for="generatorSize">Generac Generator Size:</label>
+        <select id="generatorSize" onchange="updatePrices()">
+            <option value="14000|7220.42">Generac 14kW - $7,220.42</option>
+            <option value="18000|8500.46">Generac 18kW - $8,500.46</option>
+            <option value="22000|9464.46" selected>Generac 22kW - $9,464.46</option>
+            <option value="24000|10112.38">Generac 24kW - $10,112.38</option>
+            <option value="26000|10918.34">Generac 26kW - $10,918.34</option>
+        </select>
+        <div class="info" id="generatorInfo"></div>
+
+        <!-- Transfer Switch -->
+        <div class="section">
+            <label>Transfer Switch:</label>
+            <div class="radio-group">
+                <input type="radio" id="transferNo" name="transfer" value="no" checked onchange="updatePrices()">
+                <label for="transferNo">No</label>
+            </div>
+            <div class="radio-group">
+                <input type="radio" id="transfer100" name="transfer" value="100" onchange="updatePrices()">
+                <label for="transfer100">Yes - 100 AMP ($1,194)</label>
+            </div>
+            <div class="radio-group">
+                <input type="radio" id="transfer200" name="transfer" value="200" onchange="updatePrices()">
+                <label for="transfer200">Yes - 200 AMP ($1,596)</label>
+            </div>
+        </div>
+
+        <!-- Smart Module - FIXED -->
+        <div class="section smart-module">
+            <label>Smart Module:</label>
+            
+            <div class="smart-option">
+                <input type="radio" id="smartNo" name="smartModule" value="no" checked onchange="updatePrices()">
+                <label for="smartNo">No Smart Module</label>
+            </div>
+            
+            <div class="smart-option">
+                <input type="radio" id="smart50" name="smartModule" value="50" onchange="updatePrices()">
+                <label for="smart50" class="highlight">50A Smart Module</label>
+                <input type="number" id="smart50Qty" class="quantity-input" value="1" min="1" max="10" onchange="updatePrices()">
+                <span class="highlight">× $234.00 = </span>
+                <span class="smart-total" id="smart50Total">$234.00</span>
+            </div>
+            
+            <div class="smart-option">
+                <input type="radio" id="smart100" name="smartModule" value="100" onchange="updatePrices()">
+                <label for="smart100" class="highlight">100A Smart Module</label>
+                <input type="number" id="smart100Qty" class="quantity-input" value="1" min="1" max="10" onchange="updatePrices()">
+                <span class="highlight">× $438.00 = </span>
+                <span class="smart-total" id="smart100Total">$438.00</span>
+            </div>
+            
+            <div class="info" id="smartInfo"></div>
+        </div>
+
+        <!-- Wire Length -->
+        <div class="section">
+            <label for="wireLength">Total Wire Length Needed (feet):</label>
+            <input type="number" id="wireLength" value="100" min="0" required onchange="updatePrices()">
+            <div class="info">First 25 ft included free. Extra wire: $11 per foot.</div>
+            <div class="info" id="wireInfo"></div>
+        </div>
+
+        <!-- Electrician Option -->
+        <div class="section">
+            <label>2x Electrician (14 Hours @ $105/hr):</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="electrician" onchange="updatePrices()">
+                <label for="electrician" class="highlight">Yes - $1,764.00</label>
+            </div>
+            <div class="info" id="electricianInfo"></div>
+        </div>
+
+        <!-- Service Contract - Highlighted Section -->
+        <div class="section service-contract">
+            <label>Annual Service Contract:</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="serviceContract" onchange="updatePrices()">
+                <label for="serviceContract" class="highlight">Yes - $345.00 per year</label>
+            </div>
+            <div class="info" id="serviceInfo">Includes annual maintenance, inspection, and priority service.</div>
+        </div>
+
+        <!-- Add-on Options -->
+        <div class="section">
+            <label>Add-on Options:</label>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="winterBattery" onchange="updatePrices()">
+                <label for="winterBattery">Winter Battery - $204</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="winterOil" onchange="updatePrices()">
+                <label for="winterOil">Winter Oil Kit - $204</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="aluminumStand" onchange="updatePrices()">
+                <label for="aluminumStand">Aluminum Stand - $432</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="battery" onchange="updatePrices()">
+                <label for="battery">Battery - $132</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="cementBase" onchange="updatePrices()">
+                <label for="cementBase">Cement Base - $375</label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="button" class="calculate-btn" onclick="calculatePrice()">Calculate Total Price</button>
+            <button type="button" class="clear-btn" onclick="clearForm()">Clear All</button>
+        </div>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        const FREE_WIRE_FEET = 25;
+        const EXTRA_WIRE_COST = 11;
+        const SMART_50_PRICE = 234;
+        const SMART_100_PRICE = 438;
+
+        function updatePrices() {
+            // Update generator info
+            const select = document.getElementById('generatorSize');
+            const [power, price] = select.value.split('|');
+            document.getElementById('generatorInfo').innerText = `${power/1000}kW Generac - $${parseFloat(price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            // Update wire info
+            const totalLength = parseFloat(document.getElementById('wireLength').value) || 0;
+            const extraFeet = Math.max(0, totalLength - FREE_WIRE_FEET);
+            const wireCost = extraFeet * EXTRA_WIRE_COST;
+            document.getElementById('wireInfo').innerText = 
+                totalLength <= FREE_WIRE_FEET 
+                    ? `All ${totalLength} ft included (free)` 
+                    : `${extraFeet} extra ft × $11/ft = $${wireCost.toLocaleString()}`;
+
+            // Update electrician info
+            const electricianChecked = document.getElementById('electrician').checked;
+            document.getElementById('electricianInfo').innerText = electricianChecked ? '2 Electricians × 14 hrs @ $105/hr = $1,764' : '';
+
+            // Update service contract info
+            const serviceChecked = document.getElementById('serviceContract').checked;
+            document.getElementById('serviceInfo').innerText = serviceChecked ? 'Includes annual maintenance, inspection, and priority service.' : 'Includes annual maintenance, inspection, and priority service.';
+
+            // FIXED: Update smart module info & totals - ONLY DISABLE OPPOSITE
+            const smartValue = document.querySelector('input[name="smartModule"]:checked').value;
+            
+            // Always enable 50A quantity input
+            document.getElementById('smart50Qty').disabled = false;
+            document.getElementById('smart50Qty').parentElement.style.opacity = '1';
+            
+            // Always enable 100A quantity input  
+            document.getElementById('smart100Qty').disabled = false;
+            document.getElementById('smart100Qty').parentElement.style.opacity = '1';
+
+            if (smartValue === '50') {
+                const qty = parseInt(document.getElementById('smart50Qty').value) || 1;
+                const total = qty * SMART_50_PRICE;
+                document.getElementById('smart50Total').textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                document.getElementById('smartInfo').innerText = `${qty} × 50A Smart Module(s) - Remote monitoring & control`;
+            } else if (smartValue === '100') {
+                const qty = parseInt(document.getElementById('smart100Qty').value) || 1;
+                const total = qty * SMART_100_PRICE;
+                document.getElementById('smart100Total').textContent = `$${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                document.getElementById('smartInfo').innerText = `${qty} × 100A Smart Module(s) - Remote monitoring & control`;
+            } else {
+                document.getElementById('smartInfo').innerText = '';
+                // Update totals to show single price when no selection
+                document.getElementById('smart50Total').textContent = '$234.00';
+                document.getElementById('smart100Total').textContent = '$438.00';
+            }
+        }
+
+        function calculatePrice() {
+            // Base generator price
+            const [_, genPrice] = document.getElementById('generatorSize').value.split('|');
+            let total = parseFloat(genPrice);
+
+            // Transfer Switch
+            let transferText = '';
+            const transferValue = document.querySelector('input[name="transfer"]:checked').value;
+            if (transferValue === '100') {
+                total += 1194;
+                transferText = 'Transfer Switch (100 AMP): $1,194.00<br>';
+            } else if (transferValue === '200') {
+                total += 1596;
+                transferText = 'Transfer Switch (200 AMP): $1,596.00<br>';
+            }
+
+            // Smart Module WITH QUANTITY - FIXED
+            let smartText = '';
+            const smartValue = document.querySelector('input[name="smartModule"]:checked').value;
+            if (smartValue === '50') {
+                const qty = parseInt(document.getElementById('smart50Qty').value) || 1;
+                const smartCost = qty * SMART_50_PRICE;
+                total += smartCost;
+                smartText = `<span class="highlight">${qty} × 50A Smart Module: $${smartCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span><br>`;
+            } else if (smartValue === '100') {
+                const qty = parseInt(document.getElementById('smart100Qty').value) || 1;
+                const smartCost = qty * SMART_100_PRICE;
+                total += smartCost;
+                smartText = `<span class="highlight">${qty} × 100A Smart Module: $${smartCost.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span><br>`;
+            }
+
+            // Wire
+            const wireLength = parseFloat(document.getElementById('wireLength').value) || 0;
+            const extraFeet = Math.max(0, wireLength - FREE_WIRE_FEET);
+            const wireCost = extraFeet * EXTRA_WIRE_COST;
+            let wireText = '';
+            if (wireLength > 0) {
+                wireText = wireLength <= FREE_WIRE_FEET 
+                    ? `Wire (${wireLength} ft): Included (free)<br>`
+                    : `Wire (${wireLength} ft): $${wireCost.toLocaleString()}.00 (${extraFeet} extra ft × $11)<br>`;
+                total += wireCost;
+            }
+
+            // Electrician
+            let electricianText = '';
+            if (document.getElementById('electrician').checked) {
+                total += 1764;
+                electricianText = '<span class="highlight">2x Electrician (14 hrs @ $105/hr): $1,764.00</span><br>';
+            }
+
+            // Service Contract
+            let serviceText = '';
+            if (document.getElementById('serviceContract').checked) {
+                total += 345;
+                serviceText = '<span class="highlight">Annual Service Contract: $345.00/year</span><br>';
+            }
+
+            // Add-ons
+            const addons = [
+                { id: 'winterBattery', price: 204, name: 'Winter Battery' },
+                { id: 'winterOil', price: 204, name: 'Winter Oil Kit' },
+                { id: 'aluminumStand', price: 432, name: 'Aluminum Stand' },
+                { id: 'battery', price: 132, name: 'Battery' },
+                { id: 'cementBase', price: 375, name: 'Cement Base' }
+            ];
+
+            let addonsText = '';
+            addons.forEach(item => {
+                if (document.getElementById(item.id).checked) {
+                    total += item.price;
+                    addonsText += `${item.name}: $${item.price.toLocaleString()}.00<br>`;
+                }
+            });
+
+            // Build result
+            const genText = document.getElementById('generatorSize').options[document.getElementById('generatorSize').selectedIndex].text;
+            let resultHTML = `<strong>${genText}</strong><br>`;
+            resultHTML += `Generator Base: $${parseFloat(genPrice).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}<br>`;
+            resultHTML += transferText;
+            resultHTML += smartText;
+            resultHTML += wireText;
+            resultHTML += electricianText;
+            resultHTML += serviceText;
+            resultHTML += addonsText;
+            resultHTML += `<strong>Total Price: $${total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
+
+            document.getElementById('result').innerHTML = resultHTML;
+        }
+
+        function clearForm() {
+            // Reset generator to default (22kW)
+            document.getElementById('generatorSize').selectedIndex = 2;
+            
+            // Reset transfer switch to No
+            document.querySelector('input[name="transfer"][value="no"]').checked = true;
+            
+            // Reset smart module to No
+            document.querySelector('input[name="smartModule"][value="no"]').checked = true;
+            document.getElementById('smart50Qty').value = 1;
+            document.getElementById('smart100Qty').value = 1;
+            
+            // Reset wire length to 100 ft
+            document.getElementById('wireLength').value = 100;
+            
+            // Uncheck all checkboxes
+            const checkboxes = ['electrician', 'serviceContract', 'winterBattery', 'winterOil', 'aluminumStand', 'battery', 'cementBase'];
+            checkboxes.forEach(id => {
+                document.getElementById(id).checked = false;
+            });
+            
+            // Clear result
+            document.getElementById('result').innerHTML = '';
+            
+            // Update display
+            updatePrices();
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            updatePrices();
+        };
+    </script>
+</body>
+</html>
